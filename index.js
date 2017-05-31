@@ -88,13 +88,13 @@ Choo.prototype.start = function () {
     }
   }
 
-  var location = createLocation()
+  var location = this._createLocation()
   this._tree = this.router(location)
   assert.ok(this._tree, 'choo.start: no valid DOM node returned for location ' + location)
 
   this.emitter.prependListener('render', nanoraf(function () {
     var renderTiming = nanotiming('choo.render')
-    var newTree = self.router(createLocation())
+    var newTree = self.router(self._createLocation())
 
     var morphTiming = nanotiming('choo.morph')
     self._tree = nanomorph(self._tree, newTree)
@@ -148,8 +148,14 @@ Choo.prototype.toString = function (location, state) {
   return html.toString()
 }
 
+Choo.prototype._createLocation = function () {
+  var pathname = window.location.pathname.replace(/\/$/, '')
+  var hash = window.location.hash.replace(/^#/, '/')
+  return pathname + hash
+}
+
 Choo.prototype._trace = function (timing, name) {
-  timing.__name = name
+  if (timing) timing.__name = name
   this.emitter.emit('trace', timing)
 }
 
@@ -161,10 +167,4 @@ function scrollIntoView () {
       if (el) el.scrollIntoView(true)
     } catch (e) {}
   }
-}
-
-function createLocation () {
-  var pathname = window.location.pathname.replace(/\/$/, '')
-  var hash = window.location.hash.replace(/^#/, '/')
-  return pathname + hash
 }
